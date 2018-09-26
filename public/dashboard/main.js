@@ -100,7 +100,7 @@ var AuthenticationService = /** @class */ (function () {
         this.http = http;
     }
     AuthenticationService.prototype.login = function (username, password) {
-        return this.http.post('http://localhost:3000/auth', {
+        return this.http.post('http://node-express-env.9uuaaiapce.us-east-1.elasticbeanstalk.com/auth', {
             un: username,
             pw: password
         });
@@ -150,7 +150,7 @@ var CambrService = /** @class */ (function () {
         this.http = http;
     }
     CambrService.prototype.getPrograms = function () {
-        return this.http.get('http://localhost:3000/cambr/programs');
+        return this.http.get('http://node-express-env.9uuaaiapce.us-east-1.elasticbeanstalk.com/cambr/programs');
     };
     CambrService = __decorate([
         Object(_angular_core__WEBPACK_IMPORTED_MODULE_0__["Injectable"])(),
