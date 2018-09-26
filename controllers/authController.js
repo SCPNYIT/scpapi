@@ -7,7 +7,10 @@ exports.auth_post = function(req,res) {
 	password = req.body.pw;
 	db.get('CAMBR').query('SELECT * FROM users WHERE id=\''+user+'\' AND Password=MD5(\''+password+'\')', function(err, rows){
 		if (err) {
-			res.send("Error: no FICA DB connection" + err);
+			console.log("Error: no FICA DB connection" + err);
+			user = new User("Dummy");
+			res.json(user);
+
 		}
 		else {
 			if(rows.length == 1) 
