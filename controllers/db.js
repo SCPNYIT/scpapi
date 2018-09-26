@@ -20,6 +20,7 @@ var state = {
 
 exports.connect = function(mode, done) {
 
+	console.log("******1******");
 	state.fica_pool = mysql.createPool({
 		connectionLimit: 4,
 		host: mode === exports.MODE_PROD? FICA_PROD_HOST : FICA_DEV_HOST,
@@ -28,13 +29,37 @@ exports.connect = function(mode, done) {
 		database: 'usbfica',
 	});
 
+	console.log("******2******");
+
+
 	state.cambr_pool = mysql.createPool({
-                connectionLimit: 4,
+                connectionLimit: 10,
+		connectTimeout  : 60 * 60 * 1000,
+    		aquireTimeout   : 60 * 60 * 1000,
+    		timeout         : 60 * 60 * 1000,
                 host: mode === exports.MODE_PROD? CAMBR_PROD_HOST : CAMBR_DEV_HOST,
                 user: 'cambr',
                 password: 'St#net!ger55',
                 database: mode === exports.MODE_PROD? 'cambr' : 'cambrdev'
         });
+
+	console.log("******3******");
+	console.log('host: '+process.env.RDS_HOSTNAME);
+	console.log('user: '+process.env.RDS_USERNAME);
+	console.log('password: '+process.env.RDS_PASSWORD);
+
+
+	state.cambr_rds_pool = mysql.createPool({
+		connectionLimit: 10,
+		connectTimeout  : 60 * 60 * 1000,
+                aquireTimeout   : 60 * 60 * 1000,
+                timeout         : 60 * 60 * 1000,
+		host     : process.env.RDS_HOSTNAME,
+  		user     : process.env.RDS_USERNAME,
+  		password : process.env.RDS_PASSWORD,
+  		port     : process.env.RDS_PORT,
+		database : 'cambrdev',
+	});
 
 
 	state.mode = mode;
@@ -47,6 +72,6 @@ exports.get = function(product) {
 	}
 
 	if(product == 'CAMBR') {
-		return state.cambr_pool;
+		return state.cambr_rds_pool;
 	}
 }
