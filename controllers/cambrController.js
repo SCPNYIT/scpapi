@@ -3,11 +3,13 @@ var db = require('./db');
 
 exports.programs_get = function(req, res) {
 	console.log("get cambr programs");
-	db.get('CAMBR').query('SELECT act.bankId, act.programId, bpm.name, stats.balance, trans.amount as netTrans FROM account_types act ' +
-		'INNER JOIN bank_program_map bpm ON act.bankId = bpm.bankId AND act.programId = bpm.programId ' +
-        'LEFT OUTER JOIN statistics_sc stats ON act.bankId = stats.bankId AND act.programId = stats.programId AND act.accountType = stats.accountType ' +
-        'LEFT OUTER JOIN falcon_transactions trans ON stats.programId = trans.subAcctId AND stats.date = trans.transdate ' +
-        'WHERE stats.date = CURDATE()',
+	db.get('CAMBR').query(
+	    'SELECT act.bankId, act.programId, bpm.name, SUM(stats.balance) AS balance, SUM(trans.amount) AS netTrans FROM account_types act ' +
+        'INNER JOIN bank_program_map bpm ON act.bankId = bpm.bankId AND act.programId = bpm.programId ' +
+        'LEFT OUTER JOIN statistics_sc stats ON act.bankId = stats.bankId AND act.programId = stats.programId ' +
+        'AND act.accountType = stats.accountType AND stats.date = CURDATE() ' +
+        'LEFT OUTER JOIN transactions trans ON stats.date = trans.transdate AND stats.programId = SUBSTRING(trans.subAcctId,1,4) ' +
+        'GROUP BY act.bankId, act.programId, bpm.name',
 		function(err, rows){
 		if(err){
 			 res.send("Error: cambr.programs.get " + err);
@@ -35,18 +37,38 @@ exports.get_programs_log = function(req, res) {
 };
 
 exports.get_program_stats = function(req, res) {
-    console.log("get statistics balance and net transactions of a program");
+    console.log("get statistics balance and net Trans of a program");
     const bankId = req.param('bankId');
     const programId = req.param('programId');
 
-    var q_str = "SELECT stats.bankId, stats.programId, bpm.name, stats.balance, trans.amount FROM statistics_sc stats LEFT OUTER JOIN " +
-        "falcon_transactions trans ON stats.programId = trans.subAcctId AND stats.date = trans.transdate " +
-        "INNER JOIN bank_program_map bpm ON stats.bankId = bpm.bankId AND stats.programId = bpm.programId " +
-        "WHERE stats.date = CURDATE() " +
-        "and stats.programId = '" + programId + "'";
+    var q_str = 'SELECT act.bankId, act.programId, bpm.name, SUM(stats.balance) AS balance, SUM(trans.amount) AS netTrans FROM account_types act ' +
+        'INNER JOIN bank_program_map bpm ON act.bankId = bpm.bankId AND act.programId = bpm.programId ' +
+        'LEFT OUTER JOIN statistics_sc stats ON act.bankId = stats.bankId AND act.programId = stats.programId ' +
+        'AND act.accountType = stats.accountType AND stats.date = CURDATE() ' +
+        'LEFT OUTER JOIN transactions trans ON stats.date = trans.transdate AND stats.programId = SUBSTRING(trans.subAcctId,1,4) ' +
+        "WHERE stats.programId = '" + programId + "'" +
+        'GROUP BY act.bankId, act.programId, bpm.name';
     db.get('CAMBR').query(q_str, function(err, rows) {
         if (err) {
-            res.send("Error: get statistics balance and net transactions "+err);
+            res.send("Error: get statistics balance and net Trans "+err);
+        }
+        else {
+            res.json(rows);
+        }
+    });
+};
+
+exports.get_program_trans = function(req, res) {
+    console.log("get net transactions of a program");
+    const bankId = req.param('bankId');
+    const programId = req.param('programId');
+
+    var q_str = "SELECT amount from transactions trans " +
+        "WHERE trans.transdate = CURDATE() " +
+        "and trans.subAcctId = '" + programId + "C'";
+    db.get('FICA').query(q_str, function(err, rows) {
+        if (err) {
+            res.send("Error: get net transactions "+err);
         }
         else {
             res.json(rows);

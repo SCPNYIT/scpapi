@@ -11,8 +11,8 @@ var cambrRouter = require('./routes/cambr');
 var cors = require('cors');
 var app = express();
 var db = require('./controllers/db');
-db.serverMode = db.MODE_DEV;
-//db.serverMode = db.MODE_PROD;
+//db.serverMode = db.MODE_DEV;
+db.serverMode = db.MODE_PROD;
 db.connect(db.serverMode, function() {
 	console.log('connect to '+db.serverMode);
 });

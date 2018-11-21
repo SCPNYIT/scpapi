@@ -12,5 +12,6 @@ router.post('/programs/log/:bankId/:programId/:pk',cambr_controller.post_cs_note
 router.get('/programs/log/:bankId/:programId/:pk',cambr_controller.get_cs_notes);
 router.post('/programs/log/:bankId/:programId/:pk/:id',cambr_controller.update_cs_notes_state);
 router.get('/programs/stats/:bankId/:programId', cambr_controller.get_program_stats);
+router.get('/programs/trans/:bankId/:programId', cambr_controller.get_program_trans);
 module.exports = router;
 
